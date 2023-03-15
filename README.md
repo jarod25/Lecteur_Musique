@@ -1,10 +1,10 @@
-#Lecteur de Musique
+# Lecteur de Musiques
 
-##Description
+## Description
 
 Voici une application réalisé en C++ avec QT pour pouvoir écouter des musiques locales.
 
-Elle est créée pour fonctionner sur Linux, la partie [](#Installation) sera donc basée dessus.
+Elle est créée pour fonctionner sur Linux, la partie [Installation](#Installation) sera donc basée dessus.
 
 Avec cette application, vous pouvez importer les musiques de votre pc et les lires.
 
@@ -13,7 +13,7 @@ Vous pouvez également créer des listes de lectures de vos titres préférés
 Ce projet de 2ème semestre de 2ème année de BUT Informatique est réalisé
 avec [Simon Nguyen](https://github.com/Snguyen70)
 
-##Installation
+## Installation
 
 Pour utiliser ce projet, il vous faudra installer QT5 et plusieurs librairies de QT :
 
