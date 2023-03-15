@@ -37,6 +37,21 @@ Pour utiliser ce projet, il vous faudra installer QT5 et plusieurs librairies de
   `sudo apt-get install libqt5multimedia5 libqt5multimedia5-plugins libqt5multimediawidgets5 qtmultimedia5-dev`
 
 
-- Une fois l'installation terminée, vous pouvez vérifier que QT5 et la bibliothèque multimédia sont installés en
-  exécutant les commandes suivantes : <br>
+- Une fois l'installation terminée, vous pouvez vérifier que QT5 est installé en  exécutant la commande suivante : <br>
   `qmake -version`
+  
+- Si vous n'avez pas de version, essayez cette commande : <br>
+ `sudo apt install qt5-qmake`
+ 
+- Après avoir installé QT et les dépédances nécessaires, téléchargez le projet (2 solutions) : <br>
+ -  Cloner le repo git sur votre pc : <br>
+  `git clone https://github.com/jarod25/Lecteur_Musique.git`
+    ou 
+   `git clone git@github.com:jarod25/Lecteur_Musique.git`
+   
+ - Télécharger le fichier d'archive .zip et l'extraire
+
+- Enfin, dans votre terminal, rendez vous dans le dossier ou se trouve le projet, puis exécutez : 
+`qmake`, `make` et enfin `./app` 
+  
+ Vous pouvez désormais importer et écouter vos musiques 
