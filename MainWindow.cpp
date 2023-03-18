@@ -13,30 +13,45 @@
 #include <QTableWidget>
 
 MainWindow::MainWindow(QWidget *parent)
-        : QMainWindow(parent) {
+    : QMainWindow(parent) {
     setupUI();
     setupConnections();
 }
 
+MainWindow::~MainWindow() {
+
+}
+
 void MainWindow::setupUI() {
     songTable = new QTableWidget(this);
-    addSongButton = new QPushButton(tr("Ajouter une chanson"), this);
-    addSongsButton = new QPushButton(tr("Ajouter plusieurs chansons"), this);
-    createPlaylistButton = new QPushButton(tr("Créer une playlist"), this);
+    songTable->setColumnCount(2);
+    songTable->setHorizontalHeaderLabels(QStringList() << "Song" << "Artist");
+    songTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    songTable->verticalHeader()->setVisible(false);
+    songTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    songTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    songTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    songTable->setAlternatingRowColors(true);
+    songTable->setShowGrid(false);
+    songTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
 
-    setCentralWidget(songTable);
-    statusBar();
-    songTable->setColumnCount(4);
-    songTable->setHorizontalHeaderLabels(QStringList() << "Titre" << "Artiste" << "Album" << "Fichier");
+    addSongButton = new QPushButton("Add Song", this);
+    addSongsButton = new QPushButton("Add Songs", this);
+    createPlaylistButton = new QPushButton("Create Playlist", this);
 
-    QGridLayout *layout = new QGridLayout;
-    layout->addWidget(addSongButton, 0, 0);
-    layout->addWidget(addSongsButton, 0, 1);
-    layout->addWidget(createPlaylistButton, 0, 2);
-    layout->addWidget(songTable, 1, 0, 1, 3);
-    QWidget *widget = new QWidget;
-    widget->setLayout(layout);
-    setCentralWidget(widget);
+    QVBoxLayout *buttonLayout = new QVBoxLayout;
+    buttonLayout->addWidget(addSongButton);
+    buttonLayout->addWidget(addSongsButton);
+    buttonLayout->addWidget(createPlaylistButton);
+    buttonLayout->addStretch();
+
+    QHBoxLayout *mainLayout = new QHBoxLayout;
+    mainLayout->addWidget(songTable);
+    mainLayout->addLayout(buttonLayout);
+
+    QWidget *centralWidget = new QWidget(this);
+    centralWidget->setLayout(mainLayout);
+    setCentralWidget(centralWidget);
 }
 
 void MainWindow::setupConnections() {
@@ -46,58 +61,58 @@ void MainWindow::setupConnections() {
 }
 
 void MainWindow::addSong() {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Sélectionnez un fichier audio"), QString(),
-                                                          tr("Fichiers audio (*.mp3 *.wav *.ogg)"));
-
-    foreach(QString
-    fileName, fileNames) {
-        QFileInfo fileInfo(fileName);
-        int row = songTable->rowCount();
-        songTable->insertRow(row);
-        songTable->setItem(row, 0, new QTableWidgetItem(fileInfo.completeBaseName()));
-        songTable->setItem(row, 1, new QTableWidgetItem("Artiste inconnu"));
-        songTable->setItem(row, 2, new QTableWidgetItem("Album inconnu"));
-        songTable->setItem(row, 3, new QTableWidgetItem(fileInfo.absoluteFilePath()));
+    QString song = QInputDialog::getText(this, "Add Song", "Song:");
+    if (song.isEmpty()) {
+        return;
     }
+
+    QString artist = QInputDialog::getText(this, "Add Song", "Artist:");
+    if (artist.isEmpty()) {
+        return;
+    }
+
+    int row = songTable->rowCount();
+    songTable->insertRow(row);
+    songTable->setItem(row, 0, new QTableWidgetItem(song));
+    songTable->setItem(row, 1, new QTableWidgetItem(artist));
 }
 
 void MainWindow::addSongs() {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Sélectionnez un ou plusieurs fichiers audio"),
-                                                          QString(), tr("Fichiers audio (*.mp3 *.wav *.ogg)"));
+    QStringList files = QFileDialog::getOpenFileNames(this, "Add Songs", "", "MP3 Files (*.mp3)");
+    if (files.isEmpty()) {
+        return;
+    }
 
-    foreach(QString
-    fileName, fileNames) {
-        QFileInfo fileInfo(fileName);
+    for (const QString &file : files) {
+        QFileInfo fileInfo(file);
         int row = songTable->rowCount();
         songTable->insertRow(row);
-        songTable->setItem(row, 0, new QTableWidgetItem(fileInfo.completeBaseName()));
-        songTable->setItem(row, 1, new QTableWidgetItem("Artiste inconnu"));
-        songTable->setItem(row, 2, new QTableWidgetItem("Album inconnu"));
-        songTable->setItem(row, 3, new QTableWidgetItem(fileInfo.absoluteFilePath()));
+        songTable->setItem(row, 0, new QTableWidgetItem(fileInfo.baseName()));
+        songTable->setItem(row, 1, new QTableWidgetItem("Unknown"));
     }
 }
 
 void MainWindow::createPlaylist() {
-    QString playlistName = QInputDialog::getText(this, tr("Nouvelle playlist"), tr("Nom de la playlist : "));
-
-    if (!playlistName.isEmpty()) {
-        QString fileName = QFileDialog::getSaveFileName(this, tr("Enregistrer la playlist"), QString(),
-                                                        tr("Playlist (*.m3u)"));
-
-        if (!fileName.isEmpty()) {
-            QFile playlistFile(fileName);
-            if (playlistFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                QTextStream stream(&playlistFile);
-                stream << "#EXTM3U\n";
-                for (int i = 0; i < songTable->rowCount(); i++) {
-                    QString filePath = songTable->item(i, 3)->text();
-                    stream << "#EXTINF:0," << songTable->item(i, 0)->text() << "\n";
-                    stream << filePath << "\n";
-                }
-                playlistFile.close();
-            }
-        }
+    QString playlist = QInputDialog::getText(this, "Create Playlist", "Playlist:");
+    if (playlist.isEmpty()) {
+        return;
     }
+
+    QString fileName = QFileDialog::getSaveFileName(this, "Create Playlist", playlist + ".m3u", "M3U Playlist (*.m3u)");
+    if (fileName.isEmpty()) {
+        return;
+    }
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+        QMessageBox::critical(this, "Error", "Unable to create playlist file.");
+        return;
+    }
+
+    QTextStream stream(&file);
+    for (int row = 0; row < songTable->rowCount(); ++row) {
+        stream << songTable->item(row, 0)->text() << " - " << songTable->item(row, 1)->text() << endl;
+    }
+
+    file.close();
 }
-
-

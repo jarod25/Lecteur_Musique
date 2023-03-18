@@ -4,6 +4,7 @@
 #include<QLabel>
 #include <QMainWindow>
 #include<QPushButton>
+#include <QTableWidget>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -25,7 +26,7 @@ private:
 
     void createPlaylist();
 
-    QTabWidget *songTable;
+    QTableWidget *songTable;
     QPushButton *addSongButton;
     QPushButton *addSongsButton;
     QPushButton *createPlaylistButton;
