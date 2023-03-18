@@ -1,9 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include<QLabel>
+#include <QLabel>
 #include <QMainWindow>
-#include<QPushButton>
+#include <QPushButton>
 #include <QTableWidget>
 
 class MainWindow : public QMainWindow {
@@ -20,15 +20,21 @@ private:
 
     void setupConnections();
 
-    void addSong();
-
-    void addSongs();
+    void importSongs();
 
     void createPlaylist();
 
+    void addSongsToPlaylist();
+
+    void showPlaylist();
+
+    void readSongs();
+
+    void readPlaylist();
+
     QTableWidget *songTable;
-    QPushButton *addSongButton;
-    QPushButton *addSongsButton;
+    QTableWidget *playlistTable;
+    QPushButton *ImportSongsButton;
     QPushButton *createPlaylistButton;
 };
 

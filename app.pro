@@ -1,4 +1,5 @@
 QT += core gui widgets multimedia
+LIBS += -ltag
 CONFIG += c++11
 TARGET = app
 TEMPLATE = app
