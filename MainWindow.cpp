@@ -17,7 +17,6 @@
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <cstdio>
-/* Simon */
 #include <QMediaPlaylist>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -32,11 +31,23 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::setupUI() {
+    /* Playlist Table */
+    playlistTable = new QTableWidget(this);
+    playlistTable->setColumnCount(2);
+    playlistTable->setHorizontalHeaderLabels(QStringList() << "Playlist" << "Durée");
+    playlistTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    playlistTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    playlistTable->setSelectionMode(QAbstractItemView::SingleSelection);
+    playlistTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    playlistTable->setAlternatingRowColors(true);
+    playlistTable->setShowGrid(false);
+    playlistTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
+
+    /* Song Table */
     songTable = new QTableWidget(this);
     songTable->setColumnCount(3);
     songTable->setHorizontalHeaderLabels(QStringList() << "Chanson" << "Artiste" << "Durée");
     songTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    songTable->verticalHeader()->setVisible(false);
     songTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     songTable->setSelectionMode(QAbstractItemView::SingleSelection);
     songTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -44,39 +55,45 @@ void MainWindow::setupUI() {
     songTable->setShowGrid(false);
     songTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
 
-    /* Créer les bouttons */
+    /* Create Instance */
     ImportSongsButton = new QPushButton("Importer des chansons", this);
     createPlaylistButton = new QPushButton("Créer une playlist", this);
+    previousButton = new QPushButton("Previous Song", this);
     playButton = new QPushButton("Play Song", this);
+    nextButton = new QPushButton("Next Song", this);
 
-    playlistTable = new QTableWidget(this);
-    playlistTable->setColumnCount(2);
-    playlistTable->setHorizontalHeaderLabels(QStringList() << "Playlist" << "Durée");
-    playlistTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    playlistTable->verticalHeader()->setVisible(false);
-    playlistTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    playlistTable->setSelectionMode(QAbstractItemView::SingleSelection);
-    playlistTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    playlistTable->setAlternatingRowColors(true);
-    playlistTable->setShowGrid(false);
-    playlistTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
-    playlistTable->setColumnWidth(0, 100);
-
-    /* Layout */
+    /* Button Layout */
     QVBoxLayout *buttonLayout = new QVBoxLayout;
     buttonLayout->addWidget(ImportSongsButton);
     buttonLayout->addWidget(createPlaylistButton);
     buttonLayout->addStretch();
-    buttonLayout->addWidget(playButton);
 
-    QHBoxLayout *playlistLayout = new QHBoxLayout;
-    playlistLayout->addWidget(playlistTable);
+    /* Play Layout */
+    QHBoxLayout *playLayout = new QHBoxLayout;
+    playLayout->addWidget(previousButton);
+    playLayout->addWidget(playButton);
+    playLayout->addWidget(nextButton);
 
-    QHBoxLayout *mainLayout = new QHBoxLayout;
-    mainLayout->addLayout(playlistLayout);
-    mainLayout->addWidget(songTable);
-    mainLayout->addLayout(buttonLayout);
+    /* Table Layout */
+    QHBoxLayout *tableLayout = new QHBoxLayout;
+    tableLayout->addWidget(playlistTable);
+    tableLayout->addWidget(songTable);
 
+    /* Table Layout */
+    QHBoxLayout *CentralLayout = new QHBoxLayout;
+    CentralLayout->addLayout(tableLayout);
+    CentralLayout->addLayout(buttonLayout);
+
+    /* Bottom Layout */
+    QVBoxLayout *bottomLayout = new QVBoxLayout;
+    bottomLayout->addLayout(playLayout);
+
+    /* Main Layout */
+    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addLayout(CentralLayout);
+    mainLayout->addLayout(bottomLayout);
+
+    /* Central Widget */
     QWidget *centralWidget = new QWidget(this);
     centralWidget->setLayout(mainLayout);
     setCentralWidget(centralWidget);
@@ -136,23 +153,27 @@ void MainWindow::showPlaylist() {
 
 }
 
-void MainWindow::readSongs() {
-    QList<QTableWidgetItem *> items = songTable->selectedItems();
-    if (items.isEmpty()) {
+void MainWindow::readSongs(const QStringList &files) {
+    if (files.isEmpty()) {
         return;
     }
 
-    QMediaPlayer *player = new QMediaPlayer(this);
-    QMediaPlaylist *playlist = new QMediaPlaylist(player);
+    for (const QString &file: files) {
+        QFileInfo fileInfo(file);
 
-    for (QTableWidgetItem *item : items) {
-        int row = item->row();
-        QString filePath = songTable->item(row, 2)->text();
-        playlist->addMedia(QUrl::fromLocalFile(filePath));
+        TagLib::FileRef f(file.toStdString().c_str());
+        QString titre = QString::fromStdString(f.tag()->title().toCString(true));
+        QString artiste = QString::fromStdString(f.tag()->artist().toCString(true));
+        int duree = f.audioProperties()->length();
+
+        int seconds = duree;
+        int minutes = seconds / 60;
+        int remainingSeconds = seconds % 60;
+
+        char buffer[20];
+        std::sprintf(buffer, "%d:%02d", minutes, remainingSeconds);
+
     }
-
-    player->setPlaylist(playlist);
-    player->play();
 }
 
 void MainWindow::readPlaylist() {
