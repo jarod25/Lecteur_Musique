@@ -17,10 +17,13 @@
 #include <taglib/fileref.h>
 #include <taglib/tag.h>
 #include <cstdio>
+/* Simon */
+#include <QMediaPlaylist>
 
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent) {
     setupUI();
+    resize(1366, 768);
     setupConnections();
 }
 
@@ -41,8 +44,10 @@ void MainWindow::setupUI() {
     songTable->setShowGrid(false);
     songTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
 
+    /* Créer les bouttons */
     ImportSongsButton = new QPushButton("Importer des chansons", this);
     createPlaylistButton = new QPushButton("Créer une playlist", this);
+    playButton = new QPushButton("Play Song", this);
 
     playlistTable = new QTableWidget(this);
     playlistTable->setColumnCount(2);
@@ -57,10 +62,12 @@ void MainWindow::setupUI() {
     playlistTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
     playlistTable->setColumnWidth(0, 100);
 
+    /* Layout */
     QVBoxLayout *buttonLayout = new QVBoxLayout;
     buttonLayout->addWidget(ImportSongsButton);
     buttonLayout->addWidget(createPlaylistButton);
     buttonLayout->addStretch();
+    buttonLayout->addWidget(playButton);
 
     QHBoxLayout *playlistLayout = new QHBoxLayout;
     playlistLayout->addWidget(playlistTable);
@@ -78,6 +85,7 @@ void MainWindow::setupUI() {
 void MainWindow::setupConnections() {
     connect(ImportSongsButton, &QPushButton::clicked, this, &MainWindow::importSongs);
     connect(createPlaylistButton, &QPushButton::clicked, this, &MainWindow::createPlaylist);
+    connect(playButton, &QPushButton::clicked, this, &MainWindow::readSongs);
 }
 
 void MainWindow::importSongs() {
@@ -129,7 +137,22 @@ void MainWindow::showPlaylist() {
 }
 
 void MainWindow::readSongs() {
+    QList<QTableWidgetItem *> items = songTable->selectedItems();
+    if (items.isEmpty()) {
+        return;
+    }
 
+    QMediaPlayer *player = new QMediaPlayer(this);
+    QMediaPlaylist *playlist = new QMediaPlaylist(player);
+
+    for (QTableWidgetItem *item : items) {
+        int row = item->row();
+        QString filePath = songTable->item(row, 2)->text();
+        playlist->addMedia(QUrl::fromLocalFile(filePath));
+    }
+
+    player->setPlaylist(playlist);
+    player->play();
 }
 
 void MainWindow::readPlaylist() {

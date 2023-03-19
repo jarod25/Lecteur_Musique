@@ -36,6 +36,7 @@ private:
     QTableWidget *playlistTable;
     QPushButton *ImportSongsButton;
     QPushButton *createPlaylistButton;
+    QPushButton *playButton;
 };
 
 #endif
