@@ -14,8 +14,8 @@ public:
 
     ~MainWindow();
 
-
 private:
+
     void setupUI();
 
     void setupConnections();
@@ -26,11 +26,17 @@ private:
 
     void addSongsToPlaylist();
 
+    void playSong();
+
+    void pauseSong();
+
     void showPlaylist();
 
-    void readSongs();
+    void playPlaylist();
 
-    void readPlaylist();
+    void nextSong();
+
+    void previousSong();
 
     QTableWidget *songTable;
     QTableWidget *playlistTable;
