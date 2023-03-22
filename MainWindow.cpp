@@ -18,9 +18,8 @@
 #include <taglib/tag.h>
 #include <cstdio>
 #include <QMediaPlaylist>
-#include <QMediaContent>
-#include <QUrl>
 
+QMediaPlayer *player = new QMediaPlayer();
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent) {
     setupUI();
@@ -172,18 +171,24 @@ void MainWindow::playSong() {
     if (songTable->currentItem() == nullptr) {
         return;
     }
-    QMediaPlayer *player = new QMediaPlayer(this);
-    player->setMedia(QUrl::fromLocalFile(songTable->item(songTable->currentRow(), 3)->text()));
-    player->play();
-    player->stateChanged(QMediaPlayer::PlayingState);
-    disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
-    connect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
-    playButton->setText("Pause");
+    if (QMediaPlayer::PausedState == player->state()) {
+        player->play();
+        player->stateChanged(QMediaPlayer::PlayingState);
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        playButton->setText("Pause");
+        return;
+    } else {
+        player->setMedia(QUrl::fromLocalFile(songTable->item(songTable->currentRow(), 3)->text()));
+        player->play();
+        player->stateChanged(QMediaPlayer::PlayingState);
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        playButton->setText("Pause");
+    }
 }
 
 void MainWindow::pauseSong() {
-    QMediaPlayer *player = new QMediaPlayer(this);
-    player->setMedia(QUrl::fromLocalFile(songTable->item(songTable->currentRow(), 3)->text()));
     player->pause();
     player->stateChanged(QMediaPlayer::PausedState);
     disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
