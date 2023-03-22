@@ -18,11 +18,14 @@
 #include <taglib/tag.h>
 #include <cstdio>
 #include <QMediaPlaylist>
+#include <QMediaContent>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget *parent)
         : QMainWindow(parent) {
     setupUI();
     resize(1366, 768);
+    setWindowTitle("Music Player");
     setupConnections();
 }
 
@@ -42,10 +45,11 @@ void MainWindow::setupUI() {
     playlistTable->setAlternatingRowColors(true);
     playlistTable->setShowGrid(false);
     playlistTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
+    playlistTable->setColumnWidth(0, 50);
 
     /* Song Table */
     songTable = new QTableWidget(this);
-    songTable->setColumnCount(3);
+    songTable->setColumnCount(4);
     songTable->setHorizontalHeaderLabels(QStringList() << "Titre" << "Artiste" << "Durée");
     songTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     songTable->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -54,6 +58,8 @@ void MainWindow::setupUI() {
     songTable->setAlternatingRowColors(true);
     songTable->setShowGrid(false);
     songTable->setStyleSheet("QTableView {selection-background-color: #b8d1f3;}");
+    songTable->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    songTable->setColumnHidden(3, true);
 
     /* Create Instance */
     ImportSongsButton = new QPushButton("Importer des chansons", this);
@@ -79,19 +85,21 @@ void MainWindow::setupUI() {
     tableLayout->addWidget(playlistTable);
     tableLayout->addWidget(songTable);
 
+    /* Top Layout */
+    QHBoxLayout *topLayout = new QHBoxLayout;
+    topLayout->addWidget(new QLabel("Playlist", this));
+    topLayout->addWidget(new QLabel("Chansons", this));
+
     /* Table Layout */
     QHBoxLayout *CentralLayout = new QHBoxLayout;
     CentralLayout->addLayout(tableLayout);
     CentralLayout->addLayout(buttonLayout);
 
-    /* Bottom Layout */
-    QVBoxLayout *bottomLayout = new QVBoxLayout;
-    bottomLayout->addLayout(playLayout);
-
     /* Main Layout */
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addLayout(topLayout);
     mainLayout->addLayout(CentralLayout);
-    mainLayout->addLayout(bottomLayout);
+    mainLayout->addLayout(playLayout);
 
     /* Central Widget */
     QWidget *centralWidget = new QWidget(this);
@@ -108,6 +116,8 @@ void MainWindow::setupConnections() {
 }
 
 void MainWindow::importSongs() {
+    QStringList musicLinks;
+
     QStringList files = QFileDialog::getOpenFileNames(this, "Ajouter des chansons", "",
                                                       "Fichiers audio (*.mp3 *.wav *.ogg)");
     if (files.isEmpty()) {
@@ -115,6 +125,8 @@ void MainWindow::importSongs() {
     }
 
     for (const QString &file: files) {
+        musicLinks.append(file);
+
         QFileInfo fileInfo(file);
         int row = songTable->rowCount();
 
@@ -134,6 +146,7 @@ void MainWindow::importSongs() {
         songTable->setItem(row, 0, new QTableWidgetItem(titre));
         songTable->setItem(row, 1, new QTableWidgetItem(artiste));
         songTable->setItem(row, 2, new QTableWidgetItem(QString::fromUtf8(buffer)));
+        songTable->setItem(row, 3, new QTableWidgetItem(file));
     }
 }
 
@@ -160,21 +173,22 @@ void MainWindow::playSong() {
         return;
     }
     QMediaPlayer *player = new QMediaPlayer(this);
-    QString songPath = songTable->currentItem()->text();
-    player->setMedia(QUrl::fromLocalFile(songPath));
+    player->setMedia(QUrl::fromLocalFile(songTable->item(songTable->currentRow(), 3)->text()));
     player->play();
-    playButton->setText("Pause");
+    player->stateChanged(QMediaPlayer::PlayingState);
+    disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
     connect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+    playButton->setText("Pause");
 }
 
 void MainWindow::pauseSong() {
-    if (songTable->currentItem() == nullptr) {
-        return;
-    }
     QMediaPlayer *player = new QMediaPlayer(this);
-    player->stop();
-    playButton->setText("Play");
+    player->setMedia(QUrl::fromLocalFile(songTable->item(songTable->currentRow(), 3)->text()));
+    player->pause();
+    player->stateChanged(QMediaPlayer::PausedState);
     disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+    connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+    playButton->setText("Play");
 }
 
 void MainWindow::playPlaylist() {
