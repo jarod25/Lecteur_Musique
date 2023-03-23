@@ -66,6 +66,7 @@ void MainWindow::setupUI() {
     previousButton = new QPushButton("Previous Song", this);
     playButton = new QPushButton("Play Song", this);
     nextButton = new QPushButton("Next Song", this);
+    stopButton = new QPushButton("Stop Song", this);
 
     /* Button Layout */
     QVBoxLayout *buttonLayout = new QVBoxLayout;
@@ -73,9 +74,10 @@ void MainWindow::setupUI() {
     buttonLayout->addWidget(createPlaylistButton);
     buttonLayout->addStretch();
 
-    /* Play Layout */
+/* Play Layout */
     QHBoxLayout *playLayout = new QHBoxLayout;
     playLayout->addWidget(previousButton);
+    playLayout->addWidget(stopButton);
     playLayout->addWidget(playButton);
     playLayout->addWidget(nextButton);
 
@@ -112,6 +114,8 @@ void MainWindow::setupConnections() {
     connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
     connect(previousButton, &QPushButton::clicked, this, &MainWindow::previousSong);
     connect(nextButton, &QPushButton::clicked, this, &MainWindow::nextSong);
+    connect(stopButton, &QPushButton::clicked, this, &MainWindow::stopSong);
+    connect(songTable, &QTableWidget::itemDoubleClicked, this, &MainWindow::playSong);
 }
 
 void MainWindow::importSongs() {
@@ -191,6 +195,14 @@ void MainWindow::playSong() {
 void MainWindow::pauseSong() {
     player->pause();
     player->stateChanged(QMediaPlayer::PausedState);
+    disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+    connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+    playButton->setText("Play");
+}
+
+void MainWindow::stopSong() {
+    player->stop();
+    player->stateChanged(QMediaPlayer::StoppedState);
     disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
     connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
     playButton->setText("Play");

@@ -30,6 +30,8 @@ private:
 
     void pauseSong();
 
+    void stopSong();
+
     void showPlaylist();
 
     void playPlaylist();
@@ -45,6 +47,7 @@ private:
 
     /* Play Button */
     QPushButton *previousButton;
+    QPushButton *stopButton;
     QPushButton *playButton;
     QPushButton *nextButton;
 };
