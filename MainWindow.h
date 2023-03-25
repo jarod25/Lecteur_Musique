@@ -5,6 +5,11 @@
 #include <QMainWindow>
 #include <QPushButton>
 #include <QTableWidget>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QHeaderView>
+#include <QMediaPlayer>
+#include <QMediaPlaylist>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -13,6 +18,11 @@ public:
     MainWindow(QWidget *parent = nullptr);
 
     ~MainWindow();
+
+public
+    slots:
+            void addSongsToPlaylist(QList < int > selectedRows);
+
 
 private:
 
@@ -24,7 +34,7 @@ private:
 
     void createPlaylist();
 
-    void addSongsToPlaylist();
+    void addToPlaylist();
 
     void playSong();
 
@@ -40,9 +50,10 @@ private:
 
     void previousSong();
 
-    QTableWidget *songTable;
+    QTableWidget *importedSongTable;
+    QTableWidget *playlistSongTable;
     QTableWidget *playlistTable;
-    QPushButton *ImportSongsButton;
+    QPushButton *importSongsButton;
     QPushButton *createPlaylistButton;
 
     /* Play Button */
@@ -50,6 +61,18 @@ private:
     QPushButton *stopButton;
     QPushButton *playButton;
     QPushButton *nextButton;
+    QPushButton *addSongButton;
+    QMediaPlayer *player;
+    QMediaPlaylist *importedSong;
+    QVBoxLayout *buttonLayout;
+    QHBoxLayout *playLayout;
+    QVBoxLayout *songLayout;
+    QVBoxLayout *playlistLayout;
+    QHBoxLayout *tableLayout;
+    QHBoxLayout *centralLayout;
+    QVBoxLayout *mainLayout;
+    QWidget *centralWidget;
+
 };
 
 #endif
