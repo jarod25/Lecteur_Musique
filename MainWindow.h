@@ -45,19 +45,22 @@ private:
 
     void showPlaylist();
 
-    void playPlaylist();
+    void playSongPlaylist();
 
     void nextSong();
 
     void previousSong();
+
+    void playPlaylist();
+
+    void pausePlaylist();
 
     QTableWidget *importedSongTable;
     QTableWidget *playlistSongTable;
     QTableWidget *playlistTable;
     QPushButton *importSongsButton;
     QPushButton *createPlaylistButton;
-
-    /* Play Button */
+    QPushButton *playPlaylistButton;
     QPushButton *previousButton;
     QPushButton *stopButton;
     QPushButton *playButton;
@@ -73,7 +76,6 @@ private:
     QHBoxLayout *centralLayout;
     QVBoxLayout *mainLayout;
     QWidget *centralWidget;
-
 };
 
 #endif

@@ -49,6 +49,7 @@ void MainWindow::setupUI() {
     importedSongTable = new QTableWidget(this);
     playlistSongTable = new QTableWidget(this);
     addSongButton = new QPushButton("Ajouter des chansons à la liste de lecture", this);
+    playPlaylistButton = new QPushButton("Lire la playlist", this);
 
     /* Design des boutons */
     playButton->setFixedSize(40, 40);
@@ -131,9 +132,11 @@ void MainWindow::setupUI() {
     buttonLayout = new QVBoxLayout();
     buttonLayout->addWidget(importSongsButton);
     buttonLayout->addWidget(createPlaylistButton);
+    buttonLayout->addWidget(playPlaylistButton);
     buttonLayout->addStretch();
     buttonLayout->addWidget(addSongButton);
     addSongButton->hide();
+    playPlaylistButton->hide();
     buttonLayout->setContentsMargins(0, 25, 0, 0);
 
     /* Play Layout */
@@ -193,6 +196,8 @@ void MainWindow::setupConnections() {
     connect(importedSongTable, &QTableWidget::itemDoubleClicked, this, &MainWindow::playSong);
     connect(playlistTable, &QTableWidget::itemDoubleClicked, this, &MainWindow::showPlaylist);
     connect(addSongButton, &QPushButton::clicked, this, &MainWindow::addToPlaylist);
+    connect(playlistSongTable, &QTableWidget::itemDoubleClicked, this, &MainWindow::playSongPlaylist);
+    connect(playPlaylistButton, &QPushButton::clicked, this, &MainWindow::playPlaylist);
 }
 
 void MainWindow::importSongs() {
@@ -342,20 +347,22 @@ void MainWindow::addSongsToPlaylist(QList<int> selectedRows) {
 void MainWindow::showPlaylist() {
     if (playlistTable->rowCount() != 0) {
         addSongButton->show();
+        playPlaylistButton->show();
     }
     if (playlistTable->item(playlistTable->currentRow(), 0)->text() == "Titres importés") {
-        if (!addSongButton->isHidden()) {
+        if (!addSongButton->isHidden() && !playPlaylistButton->isHidden()) {
             addSongButton->hide();
+            playPlaylistButton->hide();
         }
         playlistSongTable->hide();
         importedSongTable->show();
-        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playPlaylist);
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSongPlaylist);
         connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
     } else {
         importedSongTable->hide();
         playlistSongTable->show();
         disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
-        connect(playButton, &QPushButton::clicked, this, &MainWindow::playPlaylist);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::playSongPlaylist);
         playlistSongTable->setRowCount(0);
         QString playlistName = playlistTable->item(playlistTable->currentRow(), 0)->text();
         QMediaPlaylist *playlist = playlists.value(playlistName);
@@ -383,10 +390,8 @@ void MainWindow::showPlaylist() {
 }
 
 void MainWindow::playSong() {
-    if (importedSongTable->currentItem() == nullptr) {
-        return;
-    }
-    if (QMediaPlayer::PausedState == player->state()) {
+    if (QMediaPlayer::PausedState == player->state() &&
+        playlistSongTable->currentRow() == player->currentMedia().request().url().toLocalFile()) {
         player->play();
         player->stateChanged(QMediaPlayer::PlayingState);
         disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
@@ -406,21 +411,76 @@ void MainWindow::playSong() {
 void MainWindow::pauseSong() {
     player->pause();
     player->stateChanged(QMediaPlayer::PausedState);
-    disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
-    connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+    if (playlistTable->item(0, 0)->text() == "Titres importés") {
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+    } else {
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::playSongPlaylist);
+    }
     playButton->setText("▶");
 }
 
 void MainWindow::stopSong() {
     player->stop();
     player->stateChanged(QMediaPlayer::StoppedState);
-    disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
-    connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+    if (playlistTable->item(0, 0)->text() == "Titres importés") {
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::playSong);
+    } else {
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::playSongPlaylist);
+    }
     playButton->setText("▶");
 }
 
-void MainWindow::playPlaylist() {
+void MainWindow::playSongPlaylist() {
+    if (playlistSongTable->currentItem() == nullptr) {
+        return;
+    }
+    if (QMediaPlayer::PausedState == player->state() &&
+        playlistSongTable->currentRow() == player->currentMedia().request().url().toLocalFile()) {
+        player->play();
+        player->stateChanged(QMediaPlayer::PlayingState);
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSongPlaylist);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        playButton->setText("❚❚");
+        return;
+    } else {
+        player->setMedia(QUrl::fromLocalFile(playlistSongTable->item(playlistSongTable->currentRow(), 3)->text()));
+        player->play();
+        player->stateChanged(QMediaPlayer::PlayingState);
+        disconnect(playButton, &QPushButton::clicked, this, &MainWindow::playSongPlaylist);
+        connect(playButton, &QPushButton::clicked, this, &MainWindow::pauseSong);
+        playButton->setText("❚❚");
+    }
+}
 
+void MainWindow::playPlaylist() {
+    if (playlistTable->currentItem() == nullptr) {
+        QMessageBox::warning(this, "Erreur", "Veuillez sélectionner une playlist");
+        return;
+    }
+    // si la playlist est vide, message d'erreur
+    if (playlistTable->item(playlistTable->currentRow(), 1)->text() == "0:00") {
+        QMessageBox::warning(this, "Erreur", "La playlist est vide");
+        return;
+    }
+    QString playlistName = playlistTable->item(playlistTable->currentRow(), 0)->text();
+    QMediaPlaylist *playlist = playlists.value(playlistName);
+    player->stop();
+    player->setPlaylist(playlist);
+    player->play();
+    playPlaylistButton->setText("Mettre en pause la playlist");
+    disconnect(playPlaylistButton, &QPushButton::clicked, this, &MainWindow::playPlaylist);
+    connect(playPlaylistButton, &QPushButton::clicked, this, &MainWindow::pausePlaylist);
+}
+
+void MainWindow::pausePlaylist() {
+    player->pause();
+    playPlaylistButton->setText("Lire la playlist");
+    disconnect(playPlaylistButton, &QPushButton::clicked, this, &MainWindow::pausePlaylist);
+    connect(playPlaylistButton, &QPushButton::clicked, this, &MainWindow::playPlaylist);
 }
 
 void MainWindow::previousSong() {
