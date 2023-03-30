@@ -4,7 +4,7 @@
 
 Voici une application réalisée en C++ avec QT pour pouvoir écouter des musiques locales.
 
-Elle est créée pour fonctionner sur Linux, la partie [Installation](#Installation) sera donc basée dessus.
+Elle est créée pour fonctionner sur Linux (Ubuntu et Debian), la partie [Installation](#Installation) sera donc basée dessus.
 
 Avec cette application, vous pouvez importer les musiques de votre pc et les lires.
 
@@ -28,12 +28,20 @@ Pour utiliser ce projet, il vous faudra installer QT5 et plusieurs librairies de
   `sudo apt-get install build-essential`
 
 
+- Veillez à ce que votre version de C++ soit au moins la 11ᵉ en exécutant la commande suivante : <br>
+  `g++ --version`
+
+
+- Si votre version est inférieure à la 11ᵉ, installez la version 11 en exécutant la commande suivante : <br>
+  `sudo apt-get install g++-11`
+
+
 - Installez QT5 en exécutant la commande suivante :<br>
   `sudo apt-get install qtbase5-dev`
 
 
 - Installez la bibliothèque multimédia en exécutant la commande suivante : <br>
-  `sudo apt-get install libqt5multimedia5 libqt5multimedia5-plugins libqt5multimediawidgets5 qtmultimedia5-dev libtag1-dev`
+  `sudo apt-get install qtchooser qt5-default qt5-qmake qtbase5-dev-tools qttools5-dev-tools libtag1-dev`
 
 
 - Une fois l'installation terminée, vous pouvez vérifier que QT5 est installé en exécutant la commande suivante : <br>
@@ -58,4 +66,3 @@ Pour utiliser ce projet, il vous faudra installer QT5 et plusieurs librairies de
   `./app` <br>
 
 Vous pouvez désormais importer et écouter vos musiques
-

@@ -21,10 +21,11 @@ public:
 
 public
     slots:
-            void addSongsToPlaylist(QList < int > selectedRows);
-
+        void addSongsToPlaylist(QList < int > selectedRows);
 
 private:
+
+    QMap<QString, QMediaPlaylist*> playlists;
 
     void setupUI();
 
