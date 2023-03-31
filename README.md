@@ -41,7 +41,7 @@ Pour utiliser ce projet, il vous faudra installer QT5 et plusieurs librairies de
 
 
 - Installez la bibliothèque multimédia en exécutant la commande suivante : <br>
-  `sudo apt-get install qtchooser qt5-default qt5-qmake qtbase5-dev-tools qttools5-dev-tools libtag1-dev`
+  `sudo apt-get install qtchooser qt5-default qt5-qmake qtbase5-dev-tools qttools5-dev-tools qtwayland5 libtag1-dev`
 
 
 - Une fois l'installation terminée, vous pouvez vérifier que QT5 est installé en exécutant la commande suivante : <br>

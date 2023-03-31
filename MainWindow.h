@@ -10,6 +10,8 @@
 #include <QHeaderView>
 #include <QMediaPlayer>
 #include <QMediaPlaylist>
+#include <QProgressBar>
+#include <QTimer>
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
@@ -22,6 +24,7 @@ public:
 public
     slots:
         void addSongsToPlaylist(QList < int > selectedRows);
+        void updateProgressBar();
 
 private:
 
@@ -47,10 +50,6 @@ private:
 
     void playSongPlaylist();
 
-    void nextSong();
-
-    void previousSong();
-
     void playPlaylist();
 
     void pausePlaylist();
@@ -61,21 +60,24 @@ private:
     QPushButton *importSongsButton;
     QPushButton *createPlaylistButton;
     QPushButton *playPlaylistButton;
-    QPushButton *previousButton;
     QPushButton *stopButton;
     QPushButton *playButton;
-    QPushButton *nextButton;
     QPushButton *addSongButton;
     QMediaPlayer *player;
     QMediaPlaylist *importedSong;
     QVBoxLayout *buttonLayout;
     QHBoxLayout *playLayout;
+    QHBoxLayout *progressLayout;
+    QVBoxLayout *bottomLayout;
     QVBoxLayout *songLayout;
     QVBoxLayout *playlistLayout;
     QHBoxLayout *tableLayout;
     QHBoxLayout *centralLayout;
     QVBoxLayout *mainLayout;
     QWidget *centralWidget;
+    QProgressBar *progressBar;
+    QTimer *timer;
+    QLabel *dureeLabel;
 };
 
 #endif
