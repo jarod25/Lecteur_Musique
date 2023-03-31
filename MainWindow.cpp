@@ -255,6 +255,10 @@ void MainWindow::createPlaylist() {
         QMessageBox::warning(this, "Erreur", "Veuillez entrer un nom de playlist");
         return;
     }
+    if (playlists.contains(playlistName)) {
+        QMessageBox::warning(this, "Erreur", "Une playlist avec ce nom existe déjà");
+        return;
+    }
     QMediaPlaylist *playlist = new QMediaPlaylist();
     playlist->setObjectName(playlistName);
     playlistTable->insertRow(playlistTable->rowCount());
@@ -481,8 +485,7 @@ void MainWindow::playPlaylist() {
     if (playlistTable->currentItem() == nullptr) {
         QMessageBox::warning(this, "Erreur", "Veuillez sélectionner une playlist");
         return;
-    };
-    // si la playlist est vide, message d'erreur
+    }
     if (playlistTable->item(playlistTable->currentRow(), 1)->text() == "0:00") {
         QMessageBox::warning(this, "Erreur", "La playlist est vide");
         return;
